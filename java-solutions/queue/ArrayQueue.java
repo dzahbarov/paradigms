@@ -31,7 +31,7 @@ public class ArrayQueue {
 
     /*
     Pred: capacity >= 0
-    Post: elements.length > n && immutable
+    Post: elements.length >= capacity, если хотим добавить не больше чем в 2 раза && immutable
      */
     private void ensureCapacity(ArrayQueue this, final int capacity) {
         assert capacity >= 0;
