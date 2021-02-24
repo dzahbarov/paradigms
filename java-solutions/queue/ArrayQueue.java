@@ -97,7 +97,7 @@ public class ArrayQueue {
     Pred: i >= 0
     Post: R = a[i] && Immutable
      */
-    public  Object get(ArrayQueue this, int i) {
+    public Object get(ArrayQueue this, int i) {
         assert i >= 0;
         return this.elements[(this.head + i) % this.elements.length];
     }
@@ -106,10 +106,10 @@ public class ArrayQueue {
     Pred: i >= 0 && obj != null
     Post: a[i] = obj && n = n' && forall k = 1..n\{i} a[k] = a[k']
      */
-    public  void set(ArrayQueue this, int i, Object obj) {
-        assert  i >= 0;
+    public void set(ArrayQueue this, int i, Object obj) {
+        assert i >= 0;
         Objects.requireNonNull(obj);
-        this.elements[(this.head+i) % this.elements.length] = obj;
+        this.elements[(this.head + i) % this.elements.length] = obj;
     }
 
 }
