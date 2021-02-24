@@ -56,7 +56,7 @@ public class BinarySearchMin {
             // Pred: a[l] > a[len(a)-1] && a[r] <= a[len(a)-1] && r > l + 1
             int m = (l + r) / 2;
             // Post: m = (l + r) / 2 && a[l] > a[len(a)-1] && a[r] <= a[len(a)-1] && r > l + 1
-            if (a[m] > a[a.length-1]) {
+            if (a[m] > a[a.length - 1]) {
                 // Pred: a[m] > a[len(a)-1] && m = (l + r) / 2 && a[r] <= a[len(a)-1] && r > l + 1
                 return recursiveBinarySearchMin(a, m, r);
                 // Post: R = a[K] && R - минимальный элемент
