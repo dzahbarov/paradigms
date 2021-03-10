@@ -1,115 +1,58 @@
 package queue;
 
-import java.util.Objects;
-
-/*
-Model:
-    [a1, a2, ..., an]
-    n -- размер очереди
-
-Inv:
-    n >= 0
-    forall i=1...n a[i] != null
-Immutable:
-    n = n' && forall i=1...n' a[i] == a'[i]
-*/
-
-public class ArrayQueue {
+public class ArrayQueue extends AbstractQueue {
     private Object[] elements = new Object[2];
-    private int size = 0;
     private int head = 0;
 
-    /*
-   Pred: obj != null
-   Post: n = n' + 1 && a[n] = obj && forall i=1...n' a[i] == a'[i]
-    */
-    public void enqueue(ArrayQueue this, Object obj) {
-        Objects.requireNonNull(obj);
-        this.ensureCapacity(size + 1);
-        this.elements[(head + size++) % elements.length] = obj;
+    protected void enqueueImpl(Object obj) {
+        ensureCapacity(size);
+        elements[(head + size - 1) % elements.length] = obj;
     }
 
-    /*
-    Pred: capacity >= 0
-    Post: elements.length >= capacity, если хотим добавить не больше чем в 2 раза && immutable
-     */
-    private void ensureCapacity(ArrayQueue this, final int capacity) {
+    private void ensureCapacity(final int capacity) {
         assert capacity >= 0;
-        if (this.elements.length < capacity) {
+        if (elements.length < capacity) {
             Object[] tmp = new Object[capacity * 2];
-            System.arraycopy(this.elements, this.head, tmp, 0, this.elements.length - this.head);
-            System.arraycopy(this.elements, 0, tmp, this.elements.length - this.head, this.head);
-            this.elements = tmp;
-            this.head = 0;
+            System.arraycopy(elements, head, tmp, 0, elements.length - head);
+            System.arraycopy(elements, 0, tmp, elements.length - head, head);
+            elements = tmp;
+            head = 0;
         }
     }
 
-    /*
-    Pred: n > 0
-    Post: R = a'[1] && Immutable
-    */
-    public Object element(ArrayQueue this) {
-        assert this.size > 0;
-        return this.elements[this.head % this.elements.length];
+    public Object element() {
+        assert size > 0;
+        return elements[head];
     }
 
-    /*
-   Pred: n > 0
-   Post: R = a'[1] && n = n'-1 && forall i = 1..n: a[i] = a'[i+1]
-   */
-    public Object dequeue(ArrayQueue this) {
-        assert this.size > 0;
-        this.size--;
-        Object result = this.elements[this.head % this.elements.length];
-
-        this.elements[this.head % this.elements.length] = null;
-        this.head = (this.head + 1) % this.elements.length;
+    protected Object dequeueImpl() {
+        Object result = elements[head];
+        elements[head] = null;
+        head = (head + 1) % elements.length;
         return result;
     }
 
-    /*
-    Pred: True
-    Post: R = n && Immutable
-     */
-    public int size(ArrayQueue this) {
-        return this.size;
+    protected void clearImpl() {
+        elements = new Object[2];
+        head = 0;
     }
 
-    /*
-    Pred: True
-    Post: R = (n == 0) && Immutable
-     */
-    public boolean isEmpty(ArrayQueue this) {
-        return this.size == 0;
+    public Object get(int i) {
+        assert i >= 0 && i <= size;
+        return elements[(head + i) % elements.length];
     }
 
-    /*
-    Pred: True
-    Post: n = 0
-     */
-    public void clear(ArrayQueue this) {
-        this.elements = new Object[2];
-        this.size = 0;
-        this.head = 0;
+    protected void setImpl(Object obj, int index) {
+        elements[(head + index) % elements.length] = obj;
     }
 
-    /*
-    Pred: i >= 0
-    Post: R = a[i] && Immutable
-     */
-    public Object get(ArrayQueue this, int i) {
-        assert i >= 0;
-        return this.elements[(this.head + i) % this.elements.length];
+    protected Object[] toArrayImpl(Object[] res) {
+        for (int i = 0; i < size; i++) {
+            res[i] = get(i);
+        }
+        return res;
     }
 
-    /*
-    Pred: i >= 0 && obj != null
-    Post: a[i] = obj && n = n' && forall k = 1..n\{i} a[k] = a[k']
-     */
-    public void set(ArrayQueue this, int i, Object obj) {
-        assert i >= 0;
-        Objects.requireNonNull(obj);
-        this.elements[(this.head + i) % this.elements.length] = obj;
-    }
+
 
 }

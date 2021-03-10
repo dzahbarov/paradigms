@@ -58,10 +58,8 @@ public class ArrayQueueModule {
    Post: R = a'[1] && n = n'-1 && forall i = 1..n: a[i] = a'[i+1]
     */
     public static Object dequeue() {
-        assert size > 0;
+        Object result = element();
         size--;
-        Object result = elements[head % elements.length];
-
         elements[head % elements.length] = null;
         head = (head + 1) % elements.length;
         return result;

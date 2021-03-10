@@ -69,9 +69,8 @@ public class ArrayQueueADT {
    */
     public static Object dequeue(ArrayQueueADT arrayQueue) {
         assert arrayQueue.size > 0;
+        Object result = element(arrayQueue);
         arrayQueue.size--;
-        Object result = arrayQueue.elements[arrayQueue.head % arrayQueue.elements.length];
-
         arrayQueue.elements[arrayQueue.head % arrayQueue.elements.length] = null;
         arrayQueue.head = (arrayQueue.head + 1) % arrayQueue.elements.length;
         return result;

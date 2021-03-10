@@ -13,6 +13,7 @@ public class MyArrayQueueADTTest {
                     ArrayQueueADT.size(queue) + " " +
                             ArrayQueueADT.element(queue) + " " +
                             ArrayQueueADT.dequeue(queue)
+
             );
         }
     }
