@@ -7,7 +7,7 @@ import expression.operations.*;
 
 import java.util.Objects;
 
-public class ExpressionParser<T extends Number> extends BaseParser implements Parser<T> {
+public class ExpressionParser<T extends Number> extends BaseParser implements MyParser<T> {
 
     @Override
     public GenericExpression<T> parse(String expression) throws ParseException {
