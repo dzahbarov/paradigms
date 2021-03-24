@@ -6,25 +6,25 @@ import expression.exceptions.EvaluateException;
 import java.util.Objects;
 
 public class Const<T extends Number> implements MathExpression<T> {
-    private final int value;
+    private final String value;
 
-    public Const(int value) {
+    public Const(String value) {
         this.value = value;
     }
 
     @Override
-    public int evaluate(int valueOfVariable){
-        return value;
+    public int evaluate(int valueOfVariable) {
+        return Integer.parseInt(value);
     }
 
     @Override
     public T evaluate(Num<T> cl, T x, T y, T z) throws EvaluateException {
-        return cl.convert(value);
+        return cl.parseConst(value);
     }
 
     @Override
-    public String toString(){
-        return Integer.toString(value);
+    public String toString() {
+        return value;
     }
 
     @Override

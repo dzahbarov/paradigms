@@ -42,6 +42,11 @@ public class MyIntWithoutCheck implements Num<Integer> {
         return element;
     }
 
+    @Override
+    public Integer parseConst(String s) {
+        return Integer.parseInt(s);
+    }
+
     private int getSqrt(int r) {
         int i = 0;
         while (i * i <= r) {

@@ -29,7 +29,7 @@ public class MyDouble implements Num<Double> {
 
     @Override
     public Double abs(Double element) {
-        return abs(element);
+        return element >= 0 ? element : -element;
     }
 
     @Override
@@ -42,4 +42,8 @@ public class MyDouble implements Num<Double> {
         return (double) element;
     }
 
+    @Override
+    public Double parseConst(String s) {
+        return Double.parseDouble(s);
+    }
 }

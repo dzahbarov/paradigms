@@ -44,4 +44,8 @@ public class MyBigInteger implements Num<BigInteger> {
         return BigInteger.valueOf(element);
     }
 
+    @Override
+    public BigInteger parseConst(String s) {
+        return new BigInteger(s);
+    }
 }

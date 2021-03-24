@@ -13,6 +13,11 @@ public class MyInteger implements Num<Integer> {
     }
 
     @Override
+    public Integer parseConst(String s) {
+        return Integer.parseInt(s);
+    }
+
+    @Override
     public Integer divide(Integer lhs, Integer rhs) {
         return checkDiv(lhs, rhs);
     }

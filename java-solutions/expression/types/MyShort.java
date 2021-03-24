@@ -40,6 +40,11 @@ public class MyShort implements Num<Short>{
     }
 
     @Override
+    public Short parseConst(String s) {
+        return Short.parseShort(s);
+    }
+
+    @Override
     public Short convert(int element) {
         return (short) element;
     }

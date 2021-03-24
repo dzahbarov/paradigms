@@ -42,6 +42,11 @@ public class MyLong implements Num<Long> {
         return (long) element;
     }
 
+    @Override
+    public Long parseConst(String s) {
+        return Long.parseLong(s);
+    }
+
     private Long getSqrt(Long r) {
         Long i = 0L;
         while (i * i <= r) {

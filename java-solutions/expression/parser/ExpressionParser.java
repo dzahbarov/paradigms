@@ -4,7 +4,6 @@ import expression.exceptions.*;
 import expression.generic.GenericExpression;
 import expression.operations.*;
 
-
 import java.util.Objects;
 
 public class ExpressionParser<T extends Number> extends BaseParser implements MyParser<T> {
@@ -37,11 +36,11 @@ public class ExpressionParser<T extends Number> extends BaseParser implements My
         return parseBinary(Operations.MUL, Operations.DIV);
     }
 
-    private GenericExpression<T> parseUnsignedConst() throws InvalidConstException {
+    private GenericExpression<T> parseUnsignedConst() {
         return parseConst(new StringBuilder());
     }
 
-    private GenericExpression<T> parseNegativeConst() throws InvalidConstException {
+    private GenericExpression<T> parseNegativeConst() {
         return parseConst(new StringBuilder().append('-'));
     }
 
@@ -169,12 +168,12 @@ public class ExpressionParser<T extends Number> extends BaseParser implements My
     }
 
 
-    private GenericExpression<T> parseConst(StringBuilder value) throws InvalidConstException {
+    private GenericExpression<T> parseConst(StringBuilder value) {
 
         while (isDigit()) {
             value.append(getNextChar());
         }
-        return new Const<T>(Integer.parseInt(value.toString()));
+        return new Const<T>(value.toString());
 
     }
 
