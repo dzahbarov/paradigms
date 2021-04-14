@@ -53,12 +53,7 @@ let ArithMean = create((...elements) => elements.reduce((a, b) => (a + b)) / ele
 
 let GeomMean = create((...elements) => Math.pow(Math.abs(elements.reduce((a, b) => (a * b))), 1 / elements.length), "geom-mean");
 
-let HarmMean = create(function (...elements) {
-    let sum = 0;
-    for (let i = 0; i < elements.length; i++)
-        sum += 1 / elements[i];
-    return elements.length / sum;
-}, "harm-mean");
+let HarmMean = create( (...elements) => elements.length / elements.reduce((sum, el) => (sum + 1/el), 0), "harm-mean");
 
 function Const(element) {
     this.element = element
