@@ -143,9 +143,8 @@ const VARS = [
     "x", "y", "z"
 ]
 
-function parsePrefix(stringp) {
+function parsePrefix(string) {
     let pos = 0;
-    let string = stringp;
 
     if (string.length === 0) {
         throw new ParseError("Пустая строка", 0);
