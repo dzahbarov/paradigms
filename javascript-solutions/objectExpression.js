@@ -6,6 +6,18 @@ function Operation(func, funcName, operands) {
     this.getFunc = () => func;
 }
 
+function create(func, funcName) {
+
+    function NewFunction(...args) {
+        return new Operation(func, funcName, args)
+    }
+
+    NewFunction.prototype = Object.create(Operation.prototype);
+    NewFunction.constructor = NewFunction;
+    return NewFunction;
+}
+
+
 Operation.prototype = {
 
     toString: function () {
@@ -23,79 +35,30 @@ Operation.prototype = {
     constructor: Operation
 }
 
-function Add(...operands) {
-    Operation.call(this, (lhs, rhs) => lhs + rhs, "+", operands);
-}
+let Add = create((lhs, rhs) => lhs + rhs, "+");
 
-Add.prototype = Object.create(Operation.prototype);
-Add.prototype.constructor = Add;
+let Multiply = create((lhs, rhs) => lhs * rhs, "*");
 
-function Multiply(...operands) {
-    Operation.call(this, (lhs, rhs) => lhs * rhs, "*", operands);
-}
+let Divide = create((lhs, rhs) => lhs / rhs, "/");
 
-Multiply.prototype = Object.create(Operation.prototype);
-Multiply.prototype.constructor = Multiply;
+let Subtract = create((lhs, rhs) => lhs - rhs, "-");
 
-function Divide(...operands) {
-    Operation.call(this, (lhs, rhs) => lhs / rhs, "/", operands);
-}
+let Negate = create(element => -element, "negate");
 
-Divide.prototype = Object.create(Operation.prototype);
-Divide.prototype.constructor = Divide;
+let Med3 = create((...elements) => elements.sort((a, b) => (a - b))[1], "med3");
 
-function Subtract(...operands) {
-    Operation.call(this, (lhs, rhs) => lhs - rhs, "-", operands);
-}
+let Avg5 = create((...elements) => elements.reduce((a, b) => (a + b)) / 5, "avg5");
 
-Subtract.prototype = Object.create(Operation.prototype);
-Subtract.prototype.constructor = Subtract;
+let ArithMean = create((...elements) => elements.reduce((a, b) => (a + b)) / elements.length, "arith-mean");
 
+let GeomMean = create((...elements) => Math.pow(Math.abs(elements.reduce((a, b) => (a * b))), 1 / elements.length), "geom-mean");
 
-function Negate(...operands) {
-    Operation.call(this, element => -element, "negate", operands);
-}
-
-Negate.prototype = Object.create(Operation.prototype);
-Negate.prototype.constructor = Negate;
-
-function Med3(...operands) {
-    Operation.call(this, (...elements) => elements.sort((a, b) => (a - b))[1], "med3", operands);
-}
-
-Med3.prototype = Object.create(Operation.prototype);
-Med3.prototype.constructor = Med3;
-
-
-function Avg5(...operands) {
-    Operation.call(this, (...elements) => elements.reduce((a, b) => (a + b)) / 5, "avg5", operands);
-}
-
-Avg5.prototype = Object.create(Operation.prototype);
-Avg5.prototype.constructor = Avg5;
-
-function ArithMean(...operands) {
-    Operation.call(this, (...elements) => elements.reduce((a, b) => (a + b)) / operands.length, "arith-mean", operands);
-}
-
-ArithMean.prototype = Object.create(Operation.prototype);
-ArithMean.prototype.constructor = ArithMean;
-
-function GeomMean(...operands) {
-    Operation.call(this, (...elements) => Math.pow((elements.reduce((a, b) => (a * b))), 1 / operands.length), "geom-mean", operands);
-}
-
-GeomMean.prototype = Object.create(Operation.prototype);
-GeomMean.prototype.constructor = GeomMean;
-
-function HarmMean(...operands) {
-    // let tmp = operands.reduce((a, b) => (1/a + 1/b));
-    // console.log(tmp);
-    Operation.call(this, (...elements) => operands.length / elements.reduce((a, b) => (1 / a + 1 / b)), "harm-mean", operands);
-}
-
-HarmMean.prototype = Object.create(Operation.prototype);
-HarmMean.prototype.constructor = HarmMean;
+let HarmMean = create(function (...elements) {
+    let sum = 0;
+    for (let i = 0; i < elements.length; i++)
+        sum += 1 / elements[i];
+    return elements.length / sum;
+}, "harm-mean");
 
 function Const(element) {
     this.element = element
@@ -150,17 +113,19 @@ function ParseError(message, position) {
 }
 
 ParseError.prototype = Object.create(Error.prototype);
-ParseError.prototype.name = "CustomError";
+ParseError.prototype.name = "Parse Error";
 ParseError.prototype.constructor = ParseError;
 
 
-function parsePrefix(string) {
-    return new Parser(string).parse();
-}
-
-function Parser(string) {
-    this.string = string;
-    this.pos = 0;
+const NUM_OF_ARGS = {
+    "+": 2,
+    "-": 2,
+    '*': 2,
+    "/": 2,
+    "negate": 1,
+    "arith-mean": Infinity,
+    "geom-mean": Infinity,
+    "harm-mean": Infinity
 }
 
 const OPERATIONS = {
@@ -168,18 +133,57 @@ const OPERATIONS = {
     "-": Subtract,
     '*': Multiply,
     "/": Divide,
-    "negate": Negate
+    "negate": Negate,
+    "arith-mean": ArithMean,
+    "geom-mean": GeomMean,
+    "harm-mean": HarmMean
 }
 
 const VARS = [
     "x", "y", "z"
 ]
+
+function parsePrefix(string) {
+    if (string.length === 0) {
+        throw new ParseError("Пустая строка", 0);
+    }
+    return new Parser(string).parse();
+}
+
+function Parser(string) {
+    this.pos = 0;
+    this.string = string;
+}
+
 Parser.prototype = {
 
     EOF: "\0",
 
-    getPos: function () {
-        return this.pos;
+    parseElements: function () {
+        this.skipWhitespaces();
+
+        if (this.test("(")) {
+            this.skipWhitespaces();
+            if (VARS.includes(this.getSym()) || this.isDigit()) {
+                throw new ParseError("Ожидалась операция", this.pos);
+            }
+            let res = this.parseElements();
+            this.skipWhitespaces();
+            if (!this.test(")")) {
+                throw new ParseError("Нет закрывающейся скобки", this.pos);
+            }
+            return res;
+        } else if (VARS.includes(this.getSym())) {
+            return new Variable(this.next());
+        } else if (this.isDigit() || this.getSym() === '-' && this.nextIsDigit()) {
+            return new Const(this.parseConst());
+        } else {
+            let op = this.parseOperationName()
+            if (op in OPERATIONS) {
+                return this.parseOperation(op, NUM_OF_ARGS[op]);
+            }
+        }
+        throw new ParseError("Неопознанный объект", this.pos);
     },
 
     next: function () {
@@ -189,7 +193,7 @@ Parser.prototype = {
     },
 
     getSym: function () {
-        if (this.getPos() < this.string.length) {
+        if (this.pos < this.string.length) {
             return this.string.charAt(this.pos);
         }
         return this.EOF;
@@ -199,7 +203,7 @@ Parser.prototype = {
         let res = this.parseElements();
         this.skipWhitespaces();
         if (!this.test(this.EOF)) {
-            throw new ParseError("Лишние аргументы", this.getPos());
+            throw new ParseError("Лишние аргументы", this.pos);
         }
         return res;
     },
@@ -212,14 +216,18 @@ Parser.prototype = {
         return false;
     },
 
+    nextIsDigit: function (c) {
+        return '0' <= this.string[this.pos + 1] && this.string[this.pos + 1] <= '9';
+    },
+
     skipWhitespaces: function () {
         while (this.test(' ')) ;
     },
 
     parseConst: function () {
         let str = '';
-        while (this.isDigit()) {
-            str = str + this.next();
+        while (this.isDigit() || this.getSym() === '-') {
+            str += this.next();
         }
         return parseInt(str);
     },
@@ -233,70 +241,37 @@ Parser.prototype = {
         while (!this.test(this.EOF) && this.getSym() !== ")") {
             args.push(this.parseElements());
             this.skipWhitespaces();
+            if (this.getSym() in OPERATIONS && !this.nextIsDigit()) {
+                throw new ParseError("Операция в неположенном месте", this.pos);
+            }
         }
         return args;
     },
 
-    parseElements: function () {
+    parseOperationName: function () {
+        let res = ""
+        while (!(res in OPERATIONS) && !this.test(this.EOF)) {
+            res += this.next();
+        }
+        return res;
+    },
+
+    parseOperation: function (v, numberOfArgs) {
         this.skipWhitespaces();
-
-        if (this.test("(")) {
-            let res = this.parseElements();
-            this.skipWhitespaces();
-            if (!this.test(")")) {
-                throw new ParseError("Нет закрывающейся скобки", this.getPos());
-            }
-            return res;
-        } else if (this.isDigit()) {
-            return new Const(this.parseConst());
-        } else if (VARS.includes(this.getSym())) {
-            return new Variable(this.next());
-        } else if (this.test('n')) {
-            if (this.test('e') && this.test('g') && this.test('a') && this.test('t') && this.test('e')) {
-                return this.pparse("negate", 1);
-            }
-            throw new ParseError("Не опознанный объект", this.getPos());
-        } else if (this.test('-')) {
-            if (this.isDigit()) {
-                return new Const(-this.parseConst());
-            } else {
-                return this.pparse("-", 2);
-            }
-        } else if (this.getSym() in OPERATIONS) {
-            let v = this.next();
-            return this.pparse(v, 2);
-        } else if (this.testString("arith-mean")) {
-            let args = this.parseArgs();
-            return new ArithMean(...args);
-        } else if (this.testString("geom-mean")) {
-            let args = this.parseArgs();
-            return new GeomMean(...args);
-        } else if (this.testString("harm-mean")) {
-            let args = this.parseArgs();
-            return new HarmMean(...args);
+        if (this.getSym() in OPERATIONS && !this.nextIsDigit()) {
+            throw new ParseError("Операция в неположенном месте", this.pos);
         }
-        throw new ParseError("Не опознанный объект", this.getPos());
-    },
-
-    testString: function (string) {
-        for (let ch of string) {
-            if (!this.test(ch)) {
-                return false;
-            }
-        }
-        return true;
-    },
-
-    pparse: function (v, numberOfArgs) {
         let args = this.parseArgs();
-        if (args.length !== numberOfArgs) {
-            throw new ParseError("Неверное количество аргументов для " + OPERATIONS[v].name, this.getPos());
+        if (args.length !== numberOfArgs && numberOfArgs !== Infinity) {
+            throw new ParseError("Неверное количество аргументов для операции. Ожидалось: " + numberOfArgs + ". Найдено: " + args.length, this.pos);
         }
         return new OPERATIONS[v](...args);
     }
 }
+
 Parser.prototype.constructor = Parser;
 
+let expr = parsePrefix("(x)");
 
 // let expr = new Subtract(
 //     new Multiply(
