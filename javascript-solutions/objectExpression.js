@@ -271,7 +271,7 @@ Parser.prototype = {
 
 Parser.prototype.constructor = Parser;
 
-let expr = parsePrefix("(x)");
+//let expr = parsePrefix("(x)");
 
 // let expr = new Subtract(
 //     new Multiply(
