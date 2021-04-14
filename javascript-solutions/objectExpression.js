@@ -143,10 +143,10 @@ const VARS = [
     "x", "y", "z"
 ]
 
-function parsePrefix(string) {
+function parsePrefix(str) {
     let pos = 0;
 
-    if (string.length === 0) {
+    if (str.length === 0) {
         throw new ParseError("Пустая строка", 0);
     }
 
@@ -186,8 +186,8 @@ function parsePrefix(string) {
     }
 
     function getSym() {
-        if (pos < string.length) {
-            return string.charAt(pos);
+        if (pos < str.length) {
+            return str.charAt(pos);
         }
         return EOF;
     }
@@ -210,7 +210,7 @@ function parsePrefix(string) {
     }
 
     function nextIsDigit(c) {
-        return '0' <= string[pos + 1] && string[pos + 1] <= '9';
+        return '0' <= str[pos + 1] && str[pos + 1] <= '9';
     }
 
     function skipWhitespaces() {
