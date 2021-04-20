@@ -102,6 +102,7 @@ Variable.prototype = {
     }
 }
 
+/*---------------------------------------------------------------------------------------------------*/
 function ParseError(message, position) {
     Error.call(this, message);
     this.message = "At position " + position + ": " + message;
@@ -142,36 +143,48 @@ function parsePrefix(str) {
     let pos = 0;
 
     if (str.length === 0) {
-        throw new ParseError("Пустая строка", 0);
+        throw new ParseError("Empty input", 0);
     }
 
     let EOF = "\0";
 
-    function parseElements() {
-        skipWhitespaces();
+    let res = parse();
+    skipWhitespaces();
+    if (!test(EOF)) {
+        throw new ParseError("Extra arguments", pos);
+    }
+    return res;
 
-        if (test("(")) {
-            skipWhitespaces();
-            if (VARS.includes(getSym()) || isDigit()) {
-                throw new ParseError("Ожидалась операция", pos);
-            }
-            let res = parseElements();
+    function parse() {
+
+        let element = parseToken();
+
+        if (element === '(') {
+            let res = parseOperation();
             skipWhitespaces();
             if (!test(")")) {
-                throw new ParseError("Нет закрывающейся скобки", pos);
+                throw new ParseError("No closing parenthesis", pos);
             }
             return res;
-        } else if (VARS.includes(getSym())) {
-            return new Variable(next());
-        } else if (isDigit() || getSym() === '-' && nextIsDigit()) {
-            return new Const(parseConst());
-        } else {
-            let op = parseOperationName()
-            if (op in OPERATIONS) {
-                return parseOperation(op, NUM_OF_ARGS[op]);
-            }
+        } else if (element === ")") {
+            throw new ParseError("Extra closing parenthesis", pos);
+        } else if (VARS.includes(element)) {
+            return new Variable(element);
         }
-        throw new ParseError("Неопознанный объект", pos);
+        if (!isNaN(+element)) {
+            return new Const(+element);
+        }
+        throw new ParseError("Undefined object", pos);
+    }
+
+    function parseToken() {
+        skipWhitespaces();
+        let res = next();
+        while (getSym() !== ' ' && getSym() !== EOF && getSym() !== ")" && getSym() !== "(" && res !== ")" && res !== "(") {
+            res += next();
+        }
+        skipWhitespaces();
+        return res;
     }
 
     function next() {
@@ -187,80 +200,49 @@ function parsePrefix(str) {
         return EOF;
     }
 
-    function parse() {
-        let res = parseElements();
-        skipWhitespaces();
-        if (!test(EOF)) {
-            throw new ParseError("Лишние аргументы", pos);
-        }
-        return res;
-    }
-
     function test(c) {
         if (getSym() === c) {
-            next();
+            pos++;
             return true;
         }
         return false;
-    }
-
-    function nextIsDigit(c) {
-        return '0' <= str[pos + 1] && str[pos + 1] <= '9';
     }
 
     function skipWhitespaces() {
         while (test(' ')) ;
     }
 
-    function parseConst() {
-        let str = '';
-        while (isDigit() || getSym() === '-') {
-            str += next();
-        }
-        return parseInt(str);
-    }
-
-    function isDigit() {
-        return '0' <= getSym() && getSym() <= '9';
+    function viewToken() {
+        let prevPosition = pos;
+        let res = parseToken();
+        pos = prevPosition;
+        return res;
     }
 
     function parseArgs() {
         let args = [];
         while (!test(EOF) && getSym() !== ")") {
-            args.push(parseElements());
+            args.push(parse());
             skipWhitespaces();
-            if (getSym() in OPERATIONS && !nextIsDigit()) {
-                throw new ParseError("Операция в неположенном месте", pos);
+            if (viewToken() in OPERATIONS) {
+                throw new ParseError("Unexpected operation", pos);
             }
         }
         return args;
     }
 
-    function parseOperationName() {
-        let res = ""
-        while (!(res in OPERATIONS) && !test(EOF)) {
-            res += next();
-        }
-        return res;
-    }
-
-    function parseOperation(v, numberOfArgs) {
-        skipWhitespaces();
-        if (getSym() in OPERATIONS && !nextIsDigit()) {
-            throw new ParseError("Операция в неположенном месте", pos);
-        }
+    function parseOperation() {
+        let op = parseToken();
         let args = parseArgs();
-        if (args.length !== numberOfArgs && numberOfArgs !== Infinity) {
-            throw new ParseError("Неверное количество аргументов для операции. Ожидалось: " + numberOfArgs + ". Найдено: " + args.length, pos);
+        if (args.length !== NUM_OF_ARGS[op] && NUM_OF_ARGS[op] !== Infinity) {
+            throw new ParseError("Wrong number of arguments. Expected: " + NUM_OF_ARGS[op] + ". Found: " + args.length, pos);
         }
-        return new OPERATIONS[v](...args);
+        return new OPERATIONS[op](...args);
     }
-
-    return parse();
 }
 
 
-//let expr =  parsePrefix('10');
+// console.log(expr.prefix())
 //let expr = parsePrefix("(x)");
 
 // let expr = new Subtract(
