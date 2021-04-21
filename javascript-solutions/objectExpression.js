@@ -233,6 +233,9 @@ function parsePrefix(str) {
 
     function parseOperation() {
         let op = parseToken();
+        if (!(op in OPERATIONS)) {
+            throw new ParseError("Expected operation", pos);
+        }
         let args = parseArgs();
         if (args.length !== NUM_OF_ARGS[op] && NUM_OF_ARGS[op] !== Infinity) {
             throw new ParseError("Wrong number of arguments. Expected: " + NUM_OF_ARGS[op] + ". Found: " + args.length, pos);
