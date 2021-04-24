@@ -37,15 +37,26 @@ public class ArrayQueue extends AbstractQueue {
         elements = new Object[2];
         head = 0;
     }
-    
+
+    @Override
     public void set(int i, Object obj) {
         assert i >= 0;
         Objects.requireNonNull(obj);
         elements[(head + i) % elements.length] = obj;
     }
 
+    @Override
     public Object get(int i) {
         assert i >= 0;
         return elements[(head + i) % elements.length];
+    }
+
+    @Override
+    public Object[] toArray() {
+        Object[] res = new Object[size];
+        for (int i = 0; i < size; i++) {
+            res[i] = get(i);
+        }
+        return res;
     }
 }
