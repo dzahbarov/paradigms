@@ -1,5 +1,7 @@
 package queue;
 
+import java.util.Objects;
+
 public class ArrayQueue extends AbstractQueue {
     private Object[] elements = new Object[2];
     private int head = 0;
@@ -34,5 +36,16 @@ public class ArrayQueue extends AbstractQueue {
     protected void clearImpl() {
         elements = new Object[2];
         head = 0;
+    }
+    
+    public void set(int i, Object obj) {
+        assert i >= 0;
+        Objects.requireNonNull(obj);
+        elements[(head + i) % elements.length] = obj;
+    }
+
+    public Object get(int i) {
+        assert i >= 0;
+        return elements[(head + i) % elements.length];
     }
 }
