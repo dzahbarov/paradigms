@@ -11,7 +11,6 @@
 (defn constant [value] (fn [args] (double value)))
 (defn variable [name] (fn [args] (double (args name))))
 
-
 (def operations {'+ add '- subtract '* multiply '/ divide 'negate negate 'sinh sinh 'cosh cosh})
 
 (defn parseArg [token]
