@@ -5,13 +5,11 @@
 (def multiply (create *))
 (def negate (create -))
 (def divide (create (fn [lhs, rhs] (/ (double lhs) (double rhs)))))
-(def sinh (create (fn [x] (Math/sinh x))))
-(def cosh (create (fn [x] (Math/cosh x))))
-
+(def sinh (create #(Math/sinh %)))
+(def cosh (create #(Math/cosh %)))
 
 (defn constant [value] (fn [args] (double value)))
 (defn variable [name] (fn [args] (double (args name))))
-
 
 (def operations {'+ add '- subtract '* multiply '/ divide 'negate negate 'sinh sinh 'cosh cosh})
 (def numberOfArgs {'+ 2 '- 2 '* 2 '/ 2 'negate 1 'sinh 1 'cosh 1})
