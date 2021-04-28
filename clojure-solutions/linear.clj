@@ -1,5 +1,5 @@
 (defn buildFunction [vecOp numOp]
-  (fn [lhs, rhs] (if (vector? lhs) (mapv vecOp lhs rhs) (numOp lhs rhs))))
+      (fn [lhs, rhs] (if (vector? lhs) (mapv vecOp lhs rhs) (numOp lhs rhs))))
 
 (defn t+ [lhs, rhs] ((buildFunction t+ +) lhs rhs))
 (defn t- [lhs, rhs] ((buildFunction t- -) lhs rhs))
@@ -24,7 +24,7 @@
 
 (def vect
   (fn [v1, v2]
-    (vector
-      (- (* (get v1 1) (get v2 2)) (* (get v1 2) (get v2 1)))
-      (- (* (get v1 2) (get v2 0)) (* (get v1 0) (get v2 2)))
-      (- (* (get v1 0) (get v2 1)) (* (get v1 1) (get v2 0))))))
+      (vector
+        (- (* (nth v1 1) (nth v2 2)) (* (nth v1 2) (nth v2 1)))
+        (- (* (nth v1 2) (nth v2 0)) (* (nth v1 0) (nth v2 2)))
+        (- (* (nth v1 0) (nth v2 1)) (* (nth v1 1) (nth v2 0))))))
