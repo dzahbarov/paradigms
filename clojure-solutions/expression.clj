@@ -9,12 +9,6 @@
 (def cosh (create (fn [x] (Math/cosh x))))
 
 
-(def min (create clojure.core/min))
-(def max (create clojure.core/max))
-(def avg (create (fn [& operands] (/ (reduce + operands)  (count operands)))))
-(def med (create (fn [& operands] (nth (sort operands) (quot (count operands) 2)) )))
-
-
 (defn constant [value] (fn [args] (double value)))
 (defn variable [name] (fn [args] (double (args name))))
 
