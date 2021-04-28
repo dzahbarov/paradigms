@@ -4,28 +4,39 @@
 (def subtract (create -))
 (def multiply (create *))
 (def negate (create -))
-
 (def divide (create (fn [lhs, rhs] (/ (double lhs) (double rhs)))))
+(def sinh (create (fn [x] (Math/sinh x))))
+(def cosh (create (fn [x] (Math/cosh x))))
+
+
+(def min (create clojure.core/min))
+(def max (create clojure.core/max))
+(def avg (create (fn [& operands] (/ (reduce + operands)  (count operands)))))
+(def med (create (fn [& operands] (nth (sort operands) (quot (count operands) 2)) )))
+
 
 (defn constant [value] (fn [args] (double value)))
 (defn variable [name] (fn [args] (double (args name))))
 
 
-(def operations {'+ add '- subtract '* multiply '/ divide 'negate negate})
-(def numberOfArgs {'+ 2 '- 2 '* 2 '/ 2 'negate 1})
+(def operations {'+ add '- subtract '* multiply '/ divide 'negate negate 'sinh sinh 'cosh cosh})
+(def numberOfArgs {'+ 2 '- 2 '* 2 '/ 2 'negate 1 'sinh 1 'cosh 1})
 
 (declare parseArg)
 
 (defn parseBrace
-  ([brace] (if (sequential? brace)
-             (apply (get operations (nth brace 0)) (map (partial parseBrace brace) (range 1 (+ (get numberOfArgs (nth brace 0)) 1))))
-             (parseArg brace)))
-  ([brace, num] (parseArg (nth brace num))))
+      ([brace] (if (sequential? brace)
+                 (apply (get operations (nth brace 0)) (map (partial parseBrace brace) (range 1 (count brace))))
+                 (parseArg brace)))
+      ([brace, num] (parseArg (nth brace num))))
 
 (defn parseArg [token]
-  (cond
-    (sequential? token) (parseBrace token)
-    (symbol? token) (variable (str token))
-    :else (constant (double token))))
+      (cond
+        (sequential? token) (parseBrace token)
+        (symbol? token) (variable (str token))
+        :else (constant (double token))))
 
 (defn parseFunction [expression] (parseBrace (read-string expression)))
+
+;(def expr (avg (constant 2) (constant 1) (constant 6) (constant 10)))
+;(println (expr {"x" 2}))
