@@ -19,8 +19,8 @@
 (def scalar (fn [v1, v2] (reduce + (v* v1 v2))))
 (def v*s (fn [v, s] (mapv (partial * s) v)))
 (def m*v (fn [matrix, vec] (mapv (partial scalar vec) matrix)))
-(def m*m (fn [lhs, rhs] (transpose (mapv (partial m*v lhs) (transpose rhs)))))
 (def m*s (fn [m, s] (mapv v*s m (vec (to-array (repeat (count m) s))))))
+(def m*m (fn [lhs, rhs] (transpose (mapv (partial m*v lhs) (transpose rhs)))))
 
 (def vect
   (fn [v1, v2]
