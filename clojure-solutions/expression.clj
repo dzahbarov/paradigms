@@ -15,7 +15,7 @@
 
 (defn parse [token]
       (cond
-        (sequential? token) (apply (get operations (peek token)) (map parse (pop token)))
+        (sequential? token) (apply (get operations (first token)) (map parse (rest token)))
         (symbol? token) (variable (str token))
         :else (constant (double token))))
 
