@@ -13,10 +13,10 @@
 
 (def operations {'+ add '- subtract '* multiply '/ divide 'negate negate 'sinh sinh 'cosh cosh})
 
-(defn parseArg [token]
+(defn parse [token]
       (cond
-        (sequential? token) (apply (get operations (peek token)) (map parseArg (pop token)))
+        (sequential? token) (apply (get operations (peek token)) (map parse (pop token)))
         (symbol? token) (variable (str token))
         :else (constant (double token))))
 
-(defn parseFunction [expression] (parseArg (read-string expression)))
+(defn parseFunction [expression] (parse (read-string expression)))
