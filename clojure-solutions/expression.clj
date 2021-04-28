@@ -31,6 +31,3 @@
         :else (constant (double token))))
 
 (defn parseFunction [expression] (parseBrace (read-string expression)))
-
-;(def expr (avg (constant 2) (constant 1) (constant 6) (constant 10)))
-;(println (expr {"x" 2}))
