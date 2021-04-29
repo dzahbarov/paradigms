@@ -14,9 +14,10 @@ public class ArrayQueue extends AbstractQueue {
     private void ensureCapacity(final int capacity) {
         assert capacity >= 0;
         if (elements.length < capacity) {
-            Object[] tmp = toArray();
-            elements = new Object[2 * capacity];
-            System.arraycopy(tmp, 0, elements, 0, size);
+            Object[] tmp = new Object[capacity * 2];
+            System.arraycopy(elements, head, tmp, 0, elements.length - head);
+            System.arraycopy(elements, 0, tmp, elements.length - head, head);
+            elements = tmp;
             head = 0;
         }
     }
@@ -55,7 +56,7 @@ public class ArrayQueue extends AbstractQueue {
     public Object[] toArray() {
         Object[] res = new Object[size];
         for (int i = 0; i < size; i++) {
-            res[i] = get(i);
+            res[i] = elements[(head + i) % elements.length];
         }
         return res;
     }
