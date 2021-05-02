@@ -1,10 +1,12 @@
-(defn buildFunction [vecOp numOp]
-      (fn [lhs, rhs] (if (vector? lhs) (mapv vecOp lhs rhs) (numOp lhs rhs))))
+(defn buildFunction [op]
+      (fn [lhs, rhs] (if (vector? lhs) (mapv (buildFunction op) lhs rhs) (op lhs rhs))))
 
-(defn t+ [lhs, rhs] ((buildFunction t+ +) lhs rhs))
-(defn t- [lhs, rhs] ((buildFunction t- -) lhs rhs))
-(defn t* [lhs, rhs] ((buildFunction t* *) lhs rhs))
-(defn td [lhs, rhs] ((buildFunction td /) lhs rhs))
+(defn buildPart [op] (fn [lhs, rhs] (mapv (partial op rhs) lhs)))
+
+(def t+ (buildFunction +))
+(def t- (buildFunction -))
+(def t* (buildFunction *))
+(def td (buildFunction /))
 
 (def v+ t+)
 (def v- t-)
@@ -17,10 +19,12 @@
 
 (def transpose (fn [matrix] (apply mapv vector matrix)))
 (def scalar (fn [v1, v2] (reduce + (v* v1 v2))))
-(def v*s (fn [v, s] (mapv (partial * s) v)))
-(def m*v (fn [matrix, vec] (mapv (partial scalar vec) matrix)))
-(def m*s (fn [m, s] (mapv v*s m (vec (to-array (repeat (count m) s))))))
+
+(def v*s (buildPart *))
+(def m*v (buildPart scalar))
+
 (def m*m (fn [lhs, rhs] (transpose (mapv (partial m*v lhs) (transpose rhs)))))
+(def m*s (buildPart #(v*s %2 %1)))
 
 (def vect
   (fn [v1, v2]
