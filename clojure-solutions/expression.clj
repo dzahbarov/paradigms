@@ -5,7 +5,7 @@
 (def multiply (create *))
 (def negate (create -))
 (def divide (create (fn ([e] (/ (double 1) (double e)))
-                      ([e & rest] (reduce #(/ (double %1) (double %2)) e rest)))))
+                        ([e & rest] (reduce #(/ (double %1) (double %2)) e rest)))))
 (def sinh (create #(Math/sinh %)))
 (def cosh (create #(Math/cosh %)))
 
@@ -24,19 +24,19 @@
 (def operations {'+ add '- subtract '* multiply '/ divide 'negate negate 'sinh sinh 'cosh cosh 'mean mean 'varn varn 'sum sum 'avg avg})
 
 (defn parse [token]
-  (cond
-    (sequential? token) (apply (get operations (first token)) (map parse (rest token)))
-    (symbol? token) (variable (str token))
-    :else (constant (double token))))
+      (cond
+        (sequential? token) (apply (get operations (first token)) (map parse (rest token)))
+        (symbol? token) (variable (str token))
+        :else (constant (double token))))
 
 (defn parseFunction [expression] (parse (read-string expression)))
 
 ;------------------------------------------------------------------------------------------
 (defn proto-get [obj key]
-  (cond
-    (contains? obj key) (obj key)
-    (contains? obj :proto) (proto-get (obj :proto) key)
-    :else nil))
+      (cond
+        (contains? obj key) (obj key)
+        (contains? obj :proto) (proto-get (obj :proto) key)
+        :else nil))
 
 (defn proto-call [obj key & args] (apply (proto-get obj key) obj args))
 
@@ -45,8 +45,8 @@
 (defn method [key] #(apply proto-call % key %&))
 
 (defn constructor
-  ([ctor, proto, func, sym, dif] (fn [& args] (apply ctor {:proto proto, :func func :sym sym :diffOp dif} args)))
-  ([ctor, proto] (fn [& args] (apply ctor {:proto proto} args))))
+      ([ctor, proto, func, sym, dif] (fn [& args] (apply ctor {:proto proto, :func func :sym sym :diffOp dif} args)))
+      ([ctor, proto] (fn [& args] (apply ctor {:proto proto} args))))
 
 (def _operands (field :operands))
 (def _func (field :func))
@@ -73,7 +73,7 @@
 (def Subtract (createOperation - "-" #(Subtract (diff %2 %1) (diff %3 %1))))
 (def Multiply (createOperation * "*" #(Add (Multiply (diff %2 %1) %3) (Multiply %2 (diff %3 %1)))))
 (def Divide (createOperation (fn ([e] (/ (double 1) (double e)))
-                               ([e & other] (reduce #(/ (double %1) (double %2)) e other)))
+                                 ([e & other] (reduce #(/ (double %1) (double %2)) e other)))
                              "/" #(Divide (Subtract (Multiply (diff %2 %1) %3) (Multiply %2 (diff %3 %1))) (Multiply %3 %3))))
 (def Negate (createOperation - "negate" #(Negate (diff %2 %1))))
 ;------------------------------------------------
@@ -84,6 +84,10 @@
 
 (def Sum (createOperation (fn [& args] (reduce + args)) "sum" identity))
 (def Avg (createOperation (fn [& args] (/ (reduce + args) (count args))) "avg" identity))
+;----------------------------------------------------
+(def And (createOperation (fn [lhs, rhs] (if (and (> lhs 0) (> rhs 0)) 1 0)) "&&" identity))
+(def Or (createOperation (fn [lhs, rhs] (if (or (> lhs 0) (> rhs 0)) 1 0)) "||" identity))
+(def Xor (createOperation (fn [lhs, rhs] (if (or (and (> lhs 0) (<= rhs 0)) (and (<= lhs 0) (> rhs 0))) 1 0)) "^^" identity))
 
 (declare Constant)
 
@@ -96,7 +100,7 @@
 (def Constant (constructor #(assoc %1 :value %2) ConstantPrototype))
 
 (def VariablePrototype
-  {:evaluate       (fn [this, args] (args (_name this)))
+  {:evaluate       (fn [this, args] (args  (str (Character/toLowerCase (get (_name this) 0)))))
    :toString       (fn [this] (_name this))
    :diff           (fn [this, var] (if (= var (_name this)) (Constant 1) (Constant 0)))
    :toStringSuffix (fn [this] (_name this))})
@@ -106,10 +110,10 @@
 (def operationsObj {'+ Add '- Subtract '* Multiply '/ Divide 'negate Negate 'sinh Sinh 'cosh Cosh})
 
 (defn parseObj [token]
-  (cond
-    (sequential? token) (apply (get operationsObj (first token)) (map parseObj (rest token)))
-    (symbol? token) (Variable (str token))
-    :else (Constant (double token))))
+      (cond
+        (sequential? token) (apply (get operationsObj (first token)) (map parseObj (rest token)))
+        (symbol? token) (Variable (str token))
+        :else (Constant (double token))))
 
 (defn parseObject [expression] (parseObj (read-string expression)))
 
@@ -121,48 +125,48 @@
 (def -tail :tail)
 
 (defn _show [result]
-  (if (-valid? result) (str "-> " (pr-str (-value result)) " | " (pr-str (apply str (-tail result))))
-                       "!"))
+      (if (-valid? result) (str "-> " (pr-str (-value result)) " | " (pr-str (apply str (-tail result))))
+                           "!"))
 (defn _tabulate [parser inputs]
-  (run! (fn [input] (printf "    %-10s %s\n" (pr-str input) (_show (parser input)))) inputs))
+      (run! (fn [input] (printf "    %-10s %s\n" (pr-str input) (_show (parser input)))) inputs))
 
 (defn _empty [value] (partial -return value))
 
 (defn _char [p]
-  (fn [[c & cs]]
-    (if (and c (p c))
-      (-return c cs))))
+      (fn [[c & cs]]
+          (if (and c (p c))
+            (-return c cs))))
 
 (defn _map [f result]
-  (if (-valid? result)
-    (-return (f (-value result)) (-tail result))))
+      (if (-valid? result)
+        (-return (f (-value result)) (-tail result))))
 
 (defn _combine [f a b]
-  (fn [input]
-    (let [ar ((force a) input)]
-      (if (-valid? ar)
-        (_map (partial f (-value ar))
-              ((force b) (-tail ar)))))))
+      (fn [input]
+          (let [ar ((force a) input)]
+               (if (-valid? ar)
+                 (_map (partial f (-value ar))
+                       ((force b) (-tail ar)))))))
 
 (defn _either [a b]
-  (fn [input]
-    (let [ar ((force a) input)]
-      (if (-valid? ar)
-        ar
-        ((force b) input)))))
+      (fn [input]
+          (let [ar ((force a) input)]
+               (if (-valid? ar)
+                 ar
+                 ((force b) input)))))
 
 (defn _parser [p]
-  (let [pp (_combine (fn [v _] v) p (_char #{\u0000}))]
-    (fn [input] (-value (pp (str input \u0000))))))
+      (let [pp (_combine (fn [v _] v) p (_char #{\u0000}))]
+           (fn [input] (-value (pp (str input \u0000))))))
 
 (defn +char [chars]
-  (_char (set chars)))
+      (_char (set chars)))
 
 (defn +char-not [chars]
-  (_char (comp not (set chars))))
+      (_char (comp not (set chars))))
 
 (defn +map [f parser]
-  (comp (partial _map f) parser))
+      (comp (partial _map f) parser))
 
 (def +parser _parser)
 
@@ -170,39 +174,39 @@
   (partial +map (constantly 'ignore)))
 
 (defn iconj [coll value]
-  (if (= value 'ignore)
-    coll
-    (conj coll value)))
+      (if (= value 'ignore)
+        coll
+        (conj coll value)))
 (defn +seq [& ps]
-  (reduce (partial _combine iconj) (_empty []) ps))
+      (reduce (partial _combine iconj) (_empty []) ps))
 
 (defn +seqf [f & ps]
-  (+map (partial apply f) (apply +seq ps)))
+      (+map (partial apply f) (apply +seq ps)))
 
 (defn +seqn [n & ps]
-  (apply +seqf #(nth %& n) ps))
+      (apply +seqf #(nth %& n) ps))
 
 (defn +or [p & ps]
-  (reduce _either p ps))
+      (reduce _either p ps))
 
 (defn +opt [p]
-  (+or p (_empty nil)))
+      (+or p (_empty nil)))
 
 (defn +star [p]
-  (letfn [(rec [] (+or (+seqf cons p (delay (rec))) (_empty ())))]
-    (rec)))
+      (letfn [(rec [] (+or (+seqf cons p (delay (rec))) (_empty ())))]
+             (rec)))
 
 (defn +plus [p]
-  (+seqf cons p (+star p)))
+      (+seqf cons p (+star p)))
 
 (defn +str [p] (+map (partial apply str) p))
 
 ;---------------------------------------------------------------------
 
 (defn createWord [word]
-  (apply +seqf (constantly word) (mapv #(+char (str %)) word)))
+      (apply +seqf (constantly word) (mapv #(+char (str %)) word)))
 
-(def parseOperations {"+" Add "-" Subtract "*" Multiply "/" Divide "negate" Negate})
+(def parseOperations {"+" Add "-" Subtract "*" Multiply "/" Divide "negate" Negate "&&" And "||" Or "^^" Xor})
 
 (def parseObjectSuffix
   (let
@@ -214,10 +218,10 @@
      *number (+map #(Constant (read-string %))
                    (+str (+seqf #(flatten %&) (+opt (+char "-")) (+plus *digit) (+opt (+char ".")) (+opt (+plus *digit)))))
      *variable (+map #(Variable %) (+str (+seqf cons *letter (+star (+or *letter *digit)))))
-     *opSymbol (+or (createWord "negate") (+char "+/-*"))]
+     *opSymbol (+or (createWord "negate") (createWord "&&") (createWord "||") (createWord "^^") (+char "+/-*"))]
     (letfn [
             (*operation []
-              (+map #(apply (get parseOperations (str (last %))) (butlast %)) (+seqn 1 (+char "(") (*arguments) *ws (+char ")"))))
+                        (+map #(apply (get parseOperations (str (last %))) (butlast %)) (+seqn 1 (+char "(") (*arguments) *ws (+char ")"))))
             (*arguments [] (+opt (+seqf cons *ws (delay (*value)) (+star (+seqn 1 (+char " ") *ws (delay (*value)))))))
             (*value [] (+or *number *opSymbol (*operation) *variable))]
-      (+parser (+seqn 0 *ws (*value) *ws)))))
+           (+parser (+seqn 0 *ws (*value) *ws)))))
