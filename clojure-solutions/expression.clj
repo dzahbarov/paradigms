@@ -85,9 +85,9 @@
 (def Sum (createOperation (fn [& args] (reduce + args)) "sum" identity))
 (def Avg (createOperation (fn [& args] (/ (reduce + args) (count args))) "avg" identity))
 ;----------------------------------------------------
-(def And (createOperation (fn [lhs, rhs] (if (and (> lhs 0) (> rhs 0)) 1 0)) "&&" identity))
-(def Or (createOperation (fn [lhs, rhs] (if (or (> lhs 0) (> rhs 0)) 1 0)) "||" identity))
-(def Xor (createOperation (fn [lhs, rhs] (if (or (and (> lhs 0) (<= rhs 0)) (and (<= lhs 0) (> rhs 0))) 1 0)) "^^" identity))
+(def And (createOperation #(if (and (> %1 0) (> %2 0)) 1 0) "&&" identity))
+(def Or (createOperation #(if (or (> %1 0) (> %2 0)) 1 0) "||" identity))
+(def Xor (createOperation #(if (or (and (> %1 0) (<= %2 0)) (and (<= %1 0) (> %2 0))) 1 0) "^^" identity))
 
 (declare Constant)
 
